@@ -126,8 +126,73 @@ app.post("/api/auth/google", (req, res) => {
   }
 });
 
+// ================== API MOCK DATA ==================
+
+// Video API
+app.get("/api/video", (req, res) => {
+  const videoData = {
+    video:
+      "https://web-assets.invideo.io/landing-pages/prod/homepage/videos/Gen3Promo.mp4",
+    user: "Nguyễn Văn A",
+  };
+  res.json(videoData);
+});
+
+// Info API
+app.get("/api/info", (req, res) => {
+  const info = {
+    title: "Đom Đóm - J97 | Bản tình ca dang dở giữa ánh sáng và bóng tối",
+    description:
+      "Đom đóm là bản hit đầy cảm xúc của J97 (Jack), mang đậm chất tự sự với hình ảnh ẩn dụ về chú đom đóm – biểu tượng của ánh sáng nhỏ bé nhưng kiên cường giữa đêm tối. Ca khúc là lời thổ lộ chân thành về một tình yêu đã qua, nơi những kỷ niệm vẫn cháy âm ỉ như ánh sáng của đom đóm giữa màn đêm lạnh lẽo.",
+  };
+  res.json(info);
+});
+
+// Photos API (50 items)
+const photos = Array.from({ length: 50 }, (_, i) => ({
+  id: i + 1,
+  title: `Photo ${i + 1}`,
+  url: `https://picsum.photos/id/${i + 1}/600/400`,
+  description: `This is the description for photo ${i + 1}.`,
+}));
+
+app.get("/api/photos", (req, res) => {
+  res.json(photos);
+});
+
+app.get("/api/photos/:id", (req, res) => {
+  const photo = photos.find((p) => p.id === parseInt(req.params.id));
+  if (photo) {
+    res.json(photo);
+  } else {
+    res.status(404).json({ message: "Photo not found" });
+  }
+});
+
+// ================== UTILITIES ==================
+function logAllEndpoints(app) {
+  app._router.stack.forEach(function (middleware) {
+    if (middleware.route) {
+      const methods = Object.keys(middleware.route.methods)
+        .map((m) => m.toUpperCase())
+        .join(", ");
+      console.log(`${methods}: ${middleware.route.path}`);
+    } else if (middleware.name === "router" && middleware.handle.stack) {
+      middleware.handle.stack.forEach(function (handler) {
+        if (handler.route) {
+          const methods = Object.keys(handler.route.methods)
+            .map((m) => m.toUpperCase())
+            .join(", ");
+          console.log(`${methods}: ${handler.route.path}`);
+        }
+      });
+    }
+  });
+}
+
 // Start server
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Mock server đang chạy tại http://localhost:${PORT}`);
+  logAllEndpoints(app);
 });
